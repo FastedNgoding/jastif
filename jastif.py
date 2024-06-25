@@ -3,9 +3,15 @@ import subprocess
 import requests
 import time
 
+def request_notification_permission():
+    try:
+        subprocess.run(['termux-notification-remove-all'], check=True)
+        print("Permission requested successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error requesting permission: {e}")
+
 def get_notifications():
     try:
-        # Memanggil termux-notification-list untuk mendapatkan daftar notifikasi
         result = subprocess.run(['termux-notification-list'], capture_output=True, text=True)
         notifications = json.loads(result.stdout)
         return notifications
@@ -31,11 +37,16 @@ def forward_notification(notification, webhook_url):
         print(f"Error forwarding notification: {e}")
 
 def main():
-    webhook_url = input("Enter the webhook URL: ")
-    package_filter = input("Enter package names to filter (comma-separated, leave blank for all): ")
+    webhook_url = input("Masukan URL Webhook: ")
+    package_filter = input("Filter Package (Opsional): ")
     package_filter = [pkg.strip() for pkg in package_filter.split(',')] if package_filter else []
 
-    print("Starting Notification Forwarder...")
+    # Request notification permission
+    print("Requesting notification access permission...")
+    request_notification_permission()
+    time.sleep(5)  # Give some time for user to grant permission
+
+    print("Jastif Running...")
     while True:
         notifications = get_notifications()
         for notification in notifications:
